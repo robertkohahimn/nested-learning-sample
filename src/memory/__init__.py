@@ -11,6 +11,6 @@ __all__ = [
     "AssociativeMemory",
 ]
 
-# Imports will be added as modules are implemented
-# from .cms import ContinuumMemorySystem
-# from .associative_memory import AssociativeMemory
+# Imports
+from .cms import ContinuumMemorySystem
+from .associative_memory import AssociativeMemory
