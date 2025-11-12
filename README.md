@@ -117,25 +117,59 @@ for step, (x, y) in enumerate(dataloader):
     nested_opt.zero_grad()
 ```
 
-### Example 3: Continuum Memory System
+### Example 3: NestedMLP with Multi-Frequency Layers
 
 ```python
-from src.memory.cms import ContinuumMemorySystem
+from src.models import NestedMLP
+from src.optimizers import NestedOptimizerBuilder
 
-# Create multi-level memory
-cms = ContinuumMemorySystem(
-    memory_config={
-        0: {'capacity': 100},   # Short-term (every step)
-        1: {'capacity': 50},    # Medium-term (every 10 steps)
-        2: {'capacity': 25}     # Long-term (every 100 steps)
-    },
-    key_dim=128,
-    value_dim=128
+# Create model with nested layers
+model = NestedMLP(
+    input_dim=784,
+    hidden_dims=[256, 128],
+    output_dim=10
 )
 
-# Store and retrieve
-cms.store(keys, values, step=current_step)
-retrieved_values, similarities = cms.query(query_keys, k=5)
+# Build frequency-aware optimizer
+builder = NestedOptimizerBuilder(model, num_levels=3)
+builder.auto_assign_params('uniform')
+optimizer = builder.build(
+    optimizer_types=['adam', 'sgd', 'sgd'],
+    learning_rates=[0.001, 0.01, 0.1],
+    frequencies=[1, 10, 100]
+)
+
+# Training with multi-frequency updates
+for step, (x, y) in enumerate(dataloader):
+    loss = criterion(model(x), y)
+    loss.backward()
+    optimizer.step(step=step)  # Updates active levels only
+    optimizer.zero_grad()
+```
+
+### Example 4: Hope Model for Language Modeling
+
+```python
+from src.models import HopeModel
+
+# Create Hope model with memory
+model = HopeModel(
+    vocab_size=10000,
+    hidden_dim=256,
+    num_layers=6,
+    memory_levels=3,
+    memory_capacities=[100, 50, 25]
+)
+
+# Forward pass
+logits, memory_info = model(input_ids, step=current_step)
+
+# Text generation
+generated = model.generate(
+    input_ids=prompt,
+    max_new_tokens=100,
+    temperature=0.8
+)
 ```
 
 ## Project Structure
@@ -167,31 +201,55 @@ See the `examples/` directory for complete examples:
 
 ## Features
 
-### ✅ Completed (Phase 1-3)
+### ✅ Completed (Phase 1-4)
 
-- [x] Project structure and setup
-- [x] Deep Momentum Gradient Descent (DMGD)
-- [x] Continuum Memory System (CMS)
-- [x] Multi-frequency updates with NestedOptimizer
-- [x] Meta-learning framework for DMGD
+**Phase 1: Project Structure**
+- [x] Complete Python package setup
+- [x] Dependencies and requirements
+- [x] Documentation framework
+
+**Phase 2: Continuum Memory System (CMS)**
+- [x] Multi-level memory banks with frequency-based updates
+- [x] L2-based associative memory retrieval
+- [x] Automatic memory consolidation
+- [x] 18/18 tests passing ✓
+
+**Phase 3: Deep Momentum GD & Nested Optimizers**
+- [x] DMGD with learnable MLP-based momentum
+- [x] NestedOptimizer for multi-frequency parameter updates
+- [x] Meta-learning framework (MAML-style)
 - [x] Task samplers (regression and classification)
-- [x] Comprehensive test suite (75+ tests passing)
-- [x] Example scripts and documentation
+- [x] 52/52 tests passing ✓
+
+**Phase 4: Model Architectures**
+- [x] NestedLayer, NestedLinear, NestedEmbedding, NestedLayerNorm
+- [x] CMSBlock and CMSAttentionBlock (memory-augmented blocks)
+- [x] NestedMLP baseline model
+- [x] Hope architecture for language modeling
+- [x] Frequency-aware parameter grouping
+- [x] 32/32 tests passing ✓
+
+**Total: 107+ tests passing across all phases! 🎉**
 
 ### ⚠️ Known Limitations
 
 - Gradient flow in meta-learning is limited (see `IMPLEMENTATION_STATUS.md`)
 - MLP parameters show minimal updates during meta-training
-- Memory overhead for large models
+- Memory overhead for large models with DMGD
 
-### 🔮 Roadmap (Phase 4-7)
+### 🔮 Roadmap (Phase 5-7)
 
-- NestedMLP and custom layer architectures
-- Hope architecture with self-modification
-- Advanced CMS features (adaptive consolidation)
-- Distributed training support
-- Pre-trained models and benchmarks
-- Integration with Hugging Face
+**Phase 5: Training Framework**
+- NestedTrainer with coordinated multi-frequency training
+- Checkpoint management with CMS state
+- Metrics tracking and TensorBoard integration
+- Training utilities (early stopping, LR scheduling)
+
+**Phase 6-7: Examples & Benchmarks**
+- Real-world demonstrations (MNIST, CIFAR-10, language tasks)
+- Continual learning benchmarks
+- Performance comparisons
+- Jupyter notebooks for exploration
 
 For detailed implementation status, see `IMPLEMENTATION_STATUS.md`
 
@@ -263,6 +321,7 @@ MIT License - see LICENSE file for details.
 - `META_LEARNING_GUIDE.md` - User guide for meta-learning
 - `PHASE2_TEST_RESULTS.md` - Phase 2 (CMS) test results
 - `PHASE3_TEST_RESULTS.md` - Phase 3 (DMGD) test results
+- `PHASE4_TEST_RESULTS.md` - Phase 4 (Architectures) test results
 
 ## Resources
 
@@ -275,6 +334,6 @@ For questions or issues, please open a GitHub issue or refer to the project docu
 
 ---
 
-**Status**: ✅ Phase 1-3 Complete | ⚠️ Meta-learning gradient flow limited | 🔮 Phase 4-7 planned
+**Status**: ✅ Phase 1-4 Complete (107+ tests passing) | ⚠️ Meta-learning gradient flow limited | 🔮 Phase 5-7 planned
 
 Last Updated: November 12, 2025
