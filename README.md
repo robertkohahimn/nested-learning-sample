@@ -44,46 +44,98 @@ pip install -e .
 
 ## Quick Start
 
-### Example 1: Simple Regression with DMGD
+### Example 1: Meta-Learning with DMGD
 
 ```python
 import torch
+import torch.nn as nn
 from src.optimizers.dmgd import DeepMomentumGD
-from src.models.nested_mlp import NestedMLP
+from src.optimizers.meta_learning import MetaLearningTrainer, create_task_sampler
 
-# Create a simple model
-model = NestedMLP(input_dim=1, hidden_dim=64, output_dim=1)
+# Define model creation function
+def create_model():
+    return nn.Sequential(
+        nn.Linear(1, 32),
+        nn.ReLU(),
+        nn.Linear(32, 1)
+    )
 
-# Use Deep Momentum GD optimizer
-optimizer = DeepMomentumGD(model.parameters(), lr=0.01)
-
-# Training loop
-for x, y in dataloader:
-    loss = criterion(model(x), y)
-    loss.backward()
-    optimizer.step()
-    optimizer.zero_grad()
-```
-
-### Example 2: Continual Learning
-
-```python
-from src.models.nested_mlp import NestedMLP
-from src.memory.cms import ContinuumMemorySystem
-
-# Create model with CMS
-model = NestedMLP(
-    input_dim=784,
-    hidden_dim=256,
-    output_dim=10,
-    use_cms=True,
-    frequency_levels=[1, 10, 100]  # Short, medium, long-term
+# Create DMGD optimizer
+dummy_model = create_model()
+dmgd = DeepMomentumGD(
+    dummy_model.parameters(),
+    lr=0.01,
+    momentum_hidden_dims=[32, 16],
+    mlp_lr=0.001
 )
 
-# Train on sequential tasks
-for task in tasks:
-    train_on_task(model, task)
-    # CMS automatically consolidates important memories
+# Create meta-learning trainer
+trainer = MetaLearningTrainer(
+    model_fn=create_model,
+    dmgd_optimizer=dmgd,
+    inner_steps=5,
+    inner_lr=0.01,
+    meta_lr=0.001
+)
+
+# Meta-train on sine wave tasks
+sampler = create_task_sampler(task_type='sine', n_train=25, n_val=25)
+meta_losses = trainer.meta_train(sampler, num_episodes=100, verbose=True)
+```
+
+### Example 2: Nested Optimizer with Multi-Frequency Updates
+
+```python
+import torch
+import torch.nn as nn
+from src.optimizers.nested_optimizer import NestedOptimizerBuilder
+
+# Create model
+model = nn.Sequential(
+    nn.Linear(784, 256),
+    nn.ReLU(),
+    nn.Linear(256, 128),
+    nn.ReLU(),
+    nn.Linear(128, 10)
+)
+
+# Build nested optimizer with 3 frequency levels
+builder = NestedOptimizerBuilder(model.parameters(), num_levels=3)
+builder.auto_assign_parameters('alternating')
+builder.set_optimizer(0, torch.optim.Adam, {'lr': 0.001})  # Fast
+builder.set_optimizer(1, torch.optim.SGD, {'lr': 0.01})     # Medium
+builder.set_optimizer(2, torch.optim.SGD, {'lr': 0.1})      # Slow
+builder.set_frequencies('exponential', base_freq=1, scale_factor=5)
+
+nested_opt = builder.build()
+
+# Training loop
+for step, (x, y) in enumerate(dataloader):
+    loss = criterion(model(x), y)
+    loss.backward()
+    nested_opt.step(step=step)  # Multi-frequency updates
+    nested_opt.zero_grad()
+```
+
+### Example 3: Continuum Memory System
+
+```python
+from src.memory.cms import ContinuumMemorySystem
+
+# Create multi-level memory
+cms = ContinuumMemorySystem(
+    memory_config={
+        0: {'capacity': 100},   # Short-term (every step)
+        1: {'capacity': 50},    # Medium-term (every 10 steps)
+        2: {'capacity': 25}     # Long-term (every 100 steps)
+    },
+    key_dim=128,
+    value_dim=128
+)
+
+# Store and retrieve
+cms.store(keys, values, step=current_step)
+retrieved_values, similarities = cms.query(query_keys, k=5)
 ```
 
 ## Project Structure
@@ -108,31 +160,40 @@ nested-learning-sample/
 
 See the `examples/` directory for complete examples:
 
-- `simple_regression.py` - Basic DMGD demonstration
-- `continual_learning.py` - Catastrophic forgetting mitigation
-- `long_context_task.py` - Needle-in-a-haystack benchmark
+- `simple_cms_example.py` - Continuum Memory System demonstration
+- `simple_dmgd_example.py` - Basic DMGD usage
+- `meta_learning_practical.py` - Comprehensive meta-learning examples
+- `meta_learning_classification.py` - Classification-focused meta-learning
 
 ## Features
 
-### Current Implementation
+### ✅ Completed (Phase 1-3)
 
 - [x] Project structure and setup
-- [ ] Deep Momentum Gradient Descent (DMGD)
-- [ ] Continuum Memory System (CMS)
-- [ ] Multi-frequency neural layers
-- [ ] NestedMLP model
-- [ ] Simplified Hope architecture
-- [ ] Training framework
-- [ ] Example scripts and benchmarks
+- [x] Deep Momentum Gradient Descent (DMGD)
+- [x] Continuum Memory System (CMS)
+- [x] Multi-frequency updates with NestedOptimizer
+- [x] Meta-learning framework for DMGD
+- [x] Task samplers (regression and classification)
+- [x] Comprehensive test suite (75+ tests passing)
+- [x] Example scripts and documentation
 
-### Roadmap
+### ⚠️ Known Limitations
 
-- Meta-learning loop for DMGD
-- Advanced CMS features (adaptive frequencies, memory consolidation)
-- Full Hope architecture with self-modification
+- Gradient flow in meta-learning is limited (see `IMPLEMENTATION_STATUS.md`)
+- MLP parameters show minimal updates during meta-training
+- Memory overhead for large models
+
+### 🔮 Roadmap (Phase 4-7)
+
+- NestedMLP and custom layer architectures
+- Hope architecture with self-modification
+- Advanced CMS features (adaptive consolidation)
 - Distributed training support
-- Pre-trained models
+- Pre-trained models and benchmarks
 - Integration with Hugging Face
+
+For detailed implementation status, see `IMPLEMENTATION_STATUS.md`
 
 ## Theory Background
 
@@ -194,11 +255,19 @@ MIT License - see LICENSE file for details.
 - Inspired by the NeurIPS 2025 paper "Nested Learning: The Illusion of Deep Learning Architectures"
 - Built with PyTorch
 
+## Documentation
+
+- `README.md` - This file, project overview and quick start
+- `projectplan.md` - Comprehensive 7-phase development plan
+- `IMPLEMENTATION_STATUS.md` - Detailed status of all components
+- `META_LEARNING_GUIDE.md` - User guide for meta-learning
+- `PHASE2_TEST_RESULTS.md` - Phase 2 (CMS) test results
+- `PHASE3_TEST_RESULTS.md` - Phase 3 (DMGD) test results
+
 ## Resources
 
 - **Paper**: [Nested Learning: The Illusion of Deep Learning Architectures](https://abehrouz.github.io/files/NL.pdf)
 - **OpenReview**: [Discussion Forum](https://openreview.net/forum?id=nbMeRvNb7A)
-- **Google Research Blog**: [Introducing Nested Learning](https://research.google/blog/introducing-nested-learning-a-new-ml-paradigm-for-continual-learning/)
 
 ## Contact
 
@@ -206,6 +275,6 @@ For questions or issues, please open a GitHub issue or refer to the project docu
 
 ---
 
-**Status**: 🚧 Under Active Development - Phase 1 Complete
+**Status**: ✅ Phase 1-3 Complete | ⚠️ Meta-learning gradient flow limited | 🔮 Phase 4-7 planned
 
-Last Updated: November 2025
+Last Updated: November 12, 2025

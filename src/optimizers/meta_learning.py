@@ -419,10 +419,45 @@ def create_task_sampler(
 
         return {'train': (X_train, y_train), 'val': (X_val, y_val)}
 
+    def sample_binary_classification():
+        """Sample a random binary classification task."""
+        # Random linear separator: y = sign(w^T x + b)
+        w = torch.randn(input_dim)
+        b = torch.randn(1)
+
+        X_train = torch.randn(n_train, input_dim)
+        scores_train = X_train @ w + b
+        y_train = (scores_train > 0).float().unsqueeze(1)
+
+        X_val = torch.randn(n_val, input_dim)
+        scores_val = X_val @ w + b
+        y_val = (scores_val > 0).float().unsqueeze(1)
+
+        return {'train': (X_train, y_train), 'val': (X_val, y_val)}
+
+    def sample_multiclass_classification():
+        """Sample a random multi-class classification task."""
+        # Random linear classifier with num_classes classes
+        num_classes = output_dim if output_dim > 1 else 3
+        W = torch.randn(num_classes, input_dim)
+        b = torch.randn(num_classes)
+
+        X_train = torch.randn(n_train, input_dim)
+        logits_train = X_train @ W.T + b
+        y_train = logits_train.argmax(dim=1)
+
+        X_val = torch.randn(n_val, input_dim)
+        logits_val = X_val @ W.T + b
+        y_val = logits_val.argmax(dim=1)
+
+        return {'train': (X_train, y_train), 'val': (X_val, y_val)}
+
     samplers = {
         'linear_regression': sample_linear_regression,
         'sine': sample_sine,
-        'polynomial': sample_polynomial
+        'polynomial': sample_polynomial,
+        'binary_classification': sample_binary_classification,
+        'multiclass_classification': sample_multiclass_classification
     }
 
     if task_type not in samplers:
