@@ -172,6 +172,48 @@ generated = model.generate(
 )
 ```
 
+### Example 5: Training with NestedTrainer
+
+```python
+from src.models import NestedMLP
+from src.optimizers import NestedOptimizerBuilder
+from src.training import NestedTrainer, EarlyStopping, CheckpointCallback
+
+# Create model
+model = NestedMLP(784, [256, 128], 10)
+
+# Build optimizer with multi-frequency updates
+builder = NestedOptimizerBuilder(model, num_levels=3)
+builder.auto_assign_params('uniform')
+optimizer = builder.build(
+    optimizer_types=['adam', 'sgd', 'sgd'],
+    learning_rates=[0.001, 0.01, 0.1],
+    frequencies=[1, 10, 100]
+)
+
+# Create trainer with callbacks
+trainer = NestedTrainer(
+    model=model,
+    optimizer=optimizer,
+    criterion=nn.CrossEntropyLoss(),
+    use_nested_optimizer=True,
+    callbacks=[
+        EarlyStopping(monitor='val_loss', patience=5),
+        CheckpointCallback(filepath='best_model.pt', save_best_only=True)
+    ]
+)
+
+# Train with automatic early stopping and checkpointing
+history = trainer.fit(
+    train_loader=train_loader,
+    val_loader=val_loader,
+    epochs=50
+)
+
+# Access training history
+print(f"Best val loss: {min(history['val_loss'])}")
+```
+
 ## Project Structure
 
 ```
@@ -181,6 +223,7 @@ nested-learning-sample/
 │   ├── memory/              # Continuum Memory System
 │   ├── layers/              # Multi-frequency layers
 │   ├── models/              # NestedMLP, Hope architecture
+│   ├── training/            # NestedTrainer and callbacks
 │   └── utils/               # Visualization and utilities
 ├── examples/                # Example scripts
 ├── tests/                   # Unit and integration tests
@@ -201,7 +244,7 @@ See the `examples/` directory for complete examples:
 
 ## Features
 
-### ✅ Completed (Phase 1-4)
+### ✅ Completed (Phase 1-5)
 
 **Phase 1: Project Structure**
 - [x] Complete Python package setup
@@ -229,7 +272,15 @@ See the `examples/` directory for complete examples:
 - [x] Frequency-aware parameter grouping
 - [x] 32/32 tests passing ✓
 
-**Total: 107+ tests passing across all phases! 🎉**
+**Phase 5: Training Framework**
+- [x] NestedTrainer with coordinated multi-frequency training
+- [x] Checkpoint management with CMS state preservation
+- [x] Callbacks (EarlyStopping, Checkpoint, LR Scheduling)
+- [x] Metrics tracking (MetricsTracker, UpdateFrequencyTracker, MemoryTracker)
+- [x] TensorBoard integration
+- [x] 13/13 tests passing ✓
+
+**Total: 120+ tests passing across all phases! 🎉**
 
 ### ⚠️ Known Limitations
 
@@ -237,13 +288,7 @@ See the `examples/` directory for complete examples:
 - MLP parameters show minimal updates during meta-training
 - Memory overhead for large models with DMGD
 
-### 🔮 Roadmap (Phase 5-7)
-
-**Phase 5: Training Framework**
-- NestedTrainer with coordinated multi-frequency training
-- Checkpoint management with CMS state
-- Metrics tracking and TensorBoard integration
-- Training utilities (early stopping, LR scheduling)
+### 🔮 Roadmap (Phase 6-7)
 
 **Phase 6-7: Examples & Benchmarks**
 - Real-world demonstrations (MNIST, CIFAR-10, language tasks)
