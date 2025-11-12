@@ -1,16 +1,33 @@
 """
-Layers module for Nested Learning.
+Neural network layers for Nested Learning.
 
-Implements:
-- NestedLayer with multi-frequency parameter updates
-- CMS Block for memory-augmented computation
+This module provides layer implementations with multi-frequency parameter updates.
 """
 
-__all__ = [
-    "NestedLayer",
-    "CMSBlock",
-]
+from .nested_layer import (
+    NestedLayer,
+    NestedLinear,
+    NestedEmbedding,
+    NestedLayerNorm,
+    FrequencyLevel,
+    get_frequency_aware_param_groups
+)
+from .cms_block import CMSBlock, CMSAttentionBlock
 
-# Imports will be added as modules are implemented
-# from .nested_layer import NestedLayer
-# from .cms_block import CMSBlock
+__all__ = [
+    # Base classes
+    'NestedLayer',
+    'FrequencyLevel',
+    
+    # Layer implementations
+    'NestedLinear',
+    'NestedEmbedding',
+    'NestedLayerNorm',
+    
+    # Blocks
+    'CMSBlock',
+    'CMSAttentionBlock',
+    
+    # Utilities
+    'get_frequency_aware_param_groups',
+]

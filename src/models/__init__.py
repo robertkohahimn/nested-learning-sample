@@ -1,16 +1,13 @@
 """
-Models module for Nested Learning.
+Model architectures for Nested Learning.
 
-Implements:
-- NestedMLP: Simple MLP with multi-frequency updates
-- Hope: Simplified Hope architecture with CMS
+This module provides complete model implementations using nested layers and CMS.
 """
 
-__all__ = [
-    "NestedMLP",
-    "HopeModel",
-]
+from .nested_mlp import NestedMLP
+from .hope import HopeModel
 
-# Imports will be added as modules are implemented
-# from .nested_mlp import NestedMLP
-# from .hope import HopeModel
+__all__ = [
+    'NestedMLP',
+    'HopeModel',
+]
