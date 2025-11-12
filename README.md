@@ -237,10 +237,20 @@ nested-learning-sample/
 
 See the `examples/` directory for complete examples:
 
+### Quick Start (⭐ Recommended for beginners)
+- `quick_comparison.py` - Fast comparison on synthetic data (~2 min on CPU)
 - `simple_cms_example.py` - Continuum Memory System demonstration
 - `simple_dmgd_example.py` - Basic DMGD usage
-- `meta_learning_practical.py` - Comprehensive meta-learning examples
-- `meta_learning_classification.py` - Classification-focused meta-learning
+
+### Real-World Demonstrations
+- `mnist_classification.py` - Complete MNIST benchmark with multi-frequency training
+- `continual_learning.py` - Preventing catastrophic forgetting on sequential tasks
+
+### Meta-Learning
+- `meta_learning_practical.py` - Comprehensive meta-learning examples (regression)
+- `meta_learning_classification.py` - Few-shot classification tasks
+
+**See `examples/README.md` for detailed usage instructions and expected results.**
 
 ## Features
 
@@ -288,13 +298,25 @@ See the `examples/` directory for complete examples:
 - MLP parameters show minimal updates during meta-training
 - Memory overhead for large models with DMGD
 
-### 🔮 Roadmap (Phase 6-7)
+### 🔄 In Progress (Phase 6)
 
-**Phase 6-7: Examples & Benchmarks**
-- Real-world demonstrations (MNIST, CIFAR-10, language tasks)
-- Continual learning benchmarks
-- Performance comparisons
-- Jupyter notebooks for exploration
+**Phase 6: Examples & Benchmarks**
+- [x] MNIST classification with multi-frequency training
+- [x] Continual learning (catastrophic forgetting prevention)
+- [x] Quick comparison script
+- [x] Comprehensive examples documentation
+- [ ] Jupyter notebooks for exploration
+- [ ] CIFAR-10 benchmark
+- [ ] Text classification with Hope
+- [ ] Performance analysis and visualizations
+
+### 🔮 Roadmap (Phase 7)
+
+**Phase 7: Advanced Features & Polish**
+- Hyperparameter search integration
+- Distributed training support
+- API documentation
+- Package for PyPI
 
 For detailed implementation status, see `IMPLEMENTATION_STATUS.md`
 
@@ -361,12 +383,14 @@ MIT License - see LICENSE file for details.
 ## Documentation
 
 - `README.md` - This file, project overview and quick start
+- `examples/README.md` - Detailed guide to all examples
 - `projectplan.md` - Comprehensive 7-phase development plan
 - `IMPLEMENTATION_STATUS.md` - Detailed status of all components
 - `META_LEARNING_GUIDE.md` - User guide for meta-learning
 - `PHASE2_TEST_RESULTS.md` - Phase 2 (CMS) test results
 - `PHASE3_TEST_RESULTS.md` - Phase 3 (DMGD) test results
 - `PHASE4_TEST_RESULTS.md` - Phase 4 (Architectures) test results
+- `PHASE5_TEST_RESULTS.md` - Phase 5 (Training Framework) test results
 
 ## Resources
 
@@ -379,6 +403,6 @@ For questions or issues, please open a GitHub issue or refer to the project docu
 
 ---
 
-**Status**: ✅ Phase 1-4 Complete (107+ tests passing) | ⚠️ Meta-learning gradient flow limited | 🔮 Phase 5-7 planned
+**Status**: ✅ Phase 1-5 Complete (120+ tests passing) | 🔄 Phase 6 In Progress (Real-world examples) | ⚠️ Meta-learning gradient flow limited
 
 Last Updated: November 12, 2025
