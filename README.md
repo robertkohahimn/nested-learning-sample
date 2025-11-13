@@ -233,7 +233,26 @@ nested-learning-sample/
 └── projectplan.md          # Detailed implementation plan
 ```
 
-## Examples
+## 📓 Interactive Notebooks
+
+**NEW!** Jupyter notebooks for hands-on learning (`notebooks/` directory):
+
+1. **01_introduction_to_nested_learning.ipynb** - Core concepts and basic usage
+2. **02_multi_frequency_training.ipynb** - Deep dive into frequency configurations
+3. **03_continuum_memory_system.ipynb** - CMS visualization and analysis
+4. 04_meta_learning_dmgd.ipynb - *Coming soon*
+5. 05_hope_architecture.ipynb - *Coming soon*
+
+**Start here for interactive exploration!** See `notebooks/README.md` for full guide.
+
+```bash
+cd notebooks
+jupyter notebook
+```
+
+---
+
+## 🚀 Examples
 
 See the `examples/` directory for complete examples:
 
@@ -305,7 +324,12 @@ See the `examples/` directory for complete examples:
 - [x] Continual learning (catastrophic forgetting prevention)
 - [x] Quick comparison script
 - [x] Comprehensive examples documentation
-- [ ] Jupyter notebooks for exploration
+- [x] Jupyter notebooks for exploration (3/5 complete)
+  - [x] 01: Introduction to Nested Learning
+  - [x] 02: Multi-Frequency Training Deep Dive
+  - [x] 03: Continuum Memory System
+  - [ ] 04: Meta-Learning with DMGD
+  - [ ] 05: Hope Architecture
 - [ ] CIFAR-10 benchmark
 - [ ] Text classification with Hope
 - [ ] Performance analysis and visualizations
@@ -383,6 +407,7 @@ MIT License - see LICENSE file for details.
 ## Documentation
 
 - `README.md` - This file, project overview and quick start
+- `notebooks/README.md` - **NEW!** Interactive notebooks guide
 - `examples/README.md` - Detailed guide to all examples
 - `projectplan.md` - Comprehensive 7-phase development plan
 - `IMPLEMENTATION_STATUS.md` - Detailed status of all components
